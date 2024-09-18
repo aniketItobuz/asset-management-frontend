@@ -79,6 +79,7 @@ function AssetHistory() {
               <th style={styles.th}>Previous Assignee</th>
               <th style={styles.th}>Current Assignee</th>
               <th style={styles.th}>Assigned Date</th>
+              <th style={styles.th}>Return Date</th>
             </tr>
           </thead>
           <tbody>
@@ -92,6 +93,9 @@ function AssetHistory() {
                   {entry.current_assignee ? entry.current_assignee.name : 'None'}
                 </td>
                 <td style={styles.td}>{new Date(entry.assigned_date).toLocaleString()}</td>
+                <td style={styles.td}>
+                  {entry.return_date ? new Date(entry.return_date).toLocaleString() : 'Not Returned'}
+                </td>
               </tr>
             ))}
           </tbody>
