@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function AddAsset() {
@@ -10,8 +10,22 @@ function AddAsset() {
     created_by: '66e6772cdd6e79520a3f110c' // Replace with dynamic value if needed
   });
 
+  const [assetTypes, setAssetTypes] = useState([]); // State to store asset types from API
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Fetch asset types when the component mounts
+  useEffect(() => {
+    const fetchAssetTypes = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_URL}/assetType/get-all`);
+        setAssetTypes(response.data.data); // Assuming response has a "data" field
+      } catch (error) {
+        console.error('Error fetching asset types', error);
+      }
+    };
+    fetchAssetTypes();
+  }, []);
 
   // Handle input changes
   const handleChange = (e) => {
@@ -66,15 +80,23 @@ function AddAsset() {
           required
           style={styles.input}
         />
-        <input
-          type="text"
+
+        {/* Dropdown for Asset Types */}
+        <select
           name="type"
           value={asset.type}
           onChange={handleChange}
-          placeholder="Type"
           required
           style={styles.input}
-        />
+        >
+          <option value="">Select Type</option>
+          {assetTypes.map((type) => (
+            <option key={type._id} value={type.title}>
+              {type.title}
+            </option>
+          ))}
+        </select>
+
         <input
           type="text"
           name="serial_no"
@@ -135,9 +157,6 @@ const styles = {
     fontSize: '16px',
     cursor: 'pointer',
     transition: 'background-color 0.3s ease',
-  },
-  buttonHover: {
-    backgroundColor: '#0056b3',
   },
   successMessage: {
     color: 'green',
