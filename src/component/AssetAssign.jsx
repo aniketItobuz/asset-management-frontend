@@ -6,13 +6,16 @@ function AssetAssign() {
     asset_id: '',
     new_assignee_id: ''
   });
+  const [returnData, setReturnData] = useState({
+    asset_id: ''
+  });
   const [assets, setAssets] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // New state to manage message type
+  const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingReturn, setLoadingReturn] = useState(false);
 
-  // Fetch assets and employees on component mount
   useEffect(() => {
     const fetchAssetsAndEmployees = async () => {
       try {
@@ -31,7 +34,6 @@ function AssetAssign() {
     fetchAssetsAndEmployees();
   }, []);
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
@@ -40,74 +42,132 @@ function AssetAssign() {
     });
   };
 
-  // Handle form submission
+  const handleReturnChange = (e) => {
+    const { name, value } = e.target;
+    setReturnData({
+      ...returnData,
+      [name]: value
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Start loading
-    setMessage(''); // Clear previous messages
-    setMessageType(''); // Clear previous message type
+    setLoading(true);
+    setMessage('');
+    setMessageType('');
 
     try {
       const response = await axios.post(`${import.meta.env.VITE_URL}/asset/assetAssign`, formData);
-      setMessage(response.data.message); // Set success message
-      setMessageType('success'); // Set message type to success
+      setMessage(response.data.message);
+      setMessageType('success');
     } catch (error) {
-      // Check for specific error response
       const errorMessage = error.response?.data?.message || 'Error assigning asset. Please try again.';
-      setMessage(errorMessage); // Set error message
-      setMessageType('error'); // Set message type to error
+      setMessage(errorMessage);
+      setMessageType('error');
       console.error(error);
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
+    }
+  };
+
+  const handleReturnSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingReturn(true);
+    setMessage('');
+    setMessageType('');
+
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_URL}/asset/assetReturn`, returnData);
+      setMessage(response.data.message);
+      setMessageType('success');
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Error returning asset. Please try again.';
+      setMessage(errorMessage);
+      setMessageType('error');
+      console.error(error);
+    } finally {
+      setLoadingReturn(false);
     }
   };
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Assign any Asset</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <label htmlFor="asset_id" style={styles.label}>Select Asset:</label>
-        <select
-          name="asset_id"
-          value={formData.asset_id}
-          onChange={handleChange}
-          required
-          style={styles.select}
-        >
-          <option value="" disabled>Select an asset</option>
-          {assets.map((asset) => (
-            <option key={asset._id} value={asset._id}>
-              {asset.name} (Serial No: {asset.serial_no})
-            </option>
-          ))}
-        </select>
 
-        <label htmlFor="new_assignee_id" style={styles.label}>Select Assignee:</label>
-        <select
-          name="new_assignee_id"
-          value={formData.new_assignee_id}
-          onChange={handleChange}
-          required
-          style={styles.select}
-        >
-          <option value="" disabled>Select an assignee</option>
-          {employees.map((employee) => (
-            <option key={employee._id} value={employee._id}>
-              {employee.name} (Email: {employee.email})
-            </option>
-          ))}
-        </select>
+      {/* Asset Assignment Form */}
+      <div style={styles.formContainer}>
+        <h3 style={styles.formTitle}>Assign Asset</h3>
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <label htmlFor="asset_id" style={styles.label}>Select Asset:</label>
+          <select
+            name="asset_id"
+            value={formData.asset_id}
+            onChange={handleChange}
+            required
+            style={styles.select}
+          >
+            <option value="" disabled>Select an asset</option>
+            {assets.map((asset) => (
+              <option key={asset._id} value={asset._id}>
+                {asset.name} (Serial No: {asset.serial_no})
+              </option>
+            ))}
+          </select>
 
-        <button
-          type="submit"
-          style={styles.submitButton}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
-          disabled={loading}
-        >
-          {loading ? 'Assigning...' : 'Assign Asset'}
-        </button>
-      </form>
+          <label htmlFor="new_assignee_id" style={styles.label}>Select Assignee:</label>
+          <select
+            name="new_assignee_id"
+            value={formData.new_assignee_id}
+            onChange={handleChange}
+            required
+            style={styles.select}
+          >
+            <option value="" disabled>Select an assignee</option>
+            {employees.map((employee) => (
+              <option key={employee._id} value={employee._id}>
+                {employee.name} (Email: {employee.email})
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="submit"
+            style={styles.submitButton}
+            disabled={loading}
+          >
+            {loading ? 'Assigning...' : 'Assign Asset'}
+          </button>
+        </form>
+      </div>
+
+      {/* Asset Return Form */}
+      <div style={styles.formContainer}>
+        <h3 style={styles.formTitle}>Return Asset</h3>
+        <form onSubmit={handleReturnSubmit} style={styles.form}>
+          <label htmlFor="asset_id" style={styles.label}>Select Asset to Return:</label>
+          <select
+            name="asset_id"
+            value={returnData.asset_id}
+            onChange={handleReturnChange}
+            required
+            style={styles.select}
+          >
+            <option value="" disabled>Select an asset</option>
+            {assets.map((asset) => (
+              <option key={asset._id} value={asset._id}>
+                {asset.name} (Serial No: {asset.serial_no})
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="submit"
+            style={styles.submitButton}
+            disabled={loadingReturn}
+          >
+            {loadingReturn ? 'Returning...' : 'Return Asset'}
+          </button>
+        </form>
+      </div>
 
       {/* Display message */}
       {message && (
@@ -119,13 +179,13 @@ function AssetAssign() {
   );
 }
 
-// Modern design styles
+// Styles remain unchanged
 const styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    padding: '20px',
+    padding: '40px',
     maxWidth: '600px',
     margin: '0 auto',
     borderRadius: '8px',
@@ -136,6 +196,20 @@ const styles = {
     fontSize: '24px',
     marginBottom: '20px',
     color: '#2980b9'
+  },
+  formContainer: {
+    width: '100%',
+    marginBottom: '20px',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    padding: '20px',
+    backgroundColor: '#f9f9f9',
+    boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
+  },
+  formTitle: {
+    fontSize: '20px',
+    marginBottom: '15px',
+    color: '#2980b9',
   },
   form: {
     display: 'flex',
