@@ -8,9 +8,11 @@ function UpdateEmployeeModal({ employeeId, onClose, onUpdate }) {
     phone_no: '',
     team: ''
   });
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Fetch employee data when component mounts or employeeId changes
   useEffect(() => {
     if (employeeId) {
       setLoading(true);
@@ -26,6 +28,18 @@ function UpdateEmployeeModal({ employeeId, onClose, onUpdate }) {
         });
     }
   }, [employeeId]);
+
+  // Fetch team data when component mounts
+  useEffect(() => {
+    axios.get(`${import.meta.env.VITE_URL}/employeeTeam/get-all`)
+      .then(response => {
+        setTeams(response.data.data);
+      })
+      .catch(error => {
+        console.error('Error fetching teams:', error);
+        setError('Failed to fetch teams data.');
+      });
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,15 +96,18 @@ function UpdateEmployeeModal({ employeeId, onClose, onUpdate }) {
             required
             style={styles.input}
           />
-          <input
-            type="text"
+          <select
             name="team"
             value={employee.team}
             onChange={handleChange}
-            placeholder="Team"
             required
             style={styles.input}
-          />
+          >
+            <option value="" disabled>Select Team</option>
+            {teams.map(team => (
+              <option key={team._id} value={team._id}>{team.title}</option>
+            ))}
+          </select>
           <button type="submit" style={styles.submitButton}>Update</button>
           <button type="button" onClick={onClose} style={styles.cancelButton}>Cancel</button>
         </form>
