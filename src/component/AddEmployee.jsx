@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function AddEmployee() {
@@ -6,20 +6,35 @@ function AddEmployee() {
     name: '',
     email: '',
     phone_no: '',
-    team: ''
+    team: '' // This will store the ObjectId of the selected team
   });
 
+  const [teams, setTeams] = useState([]); // State for team options
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Fetch team data from API
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/employeeTeam/get-all');
+        setTeams(response.data.data); // Update teams state with API data
+      } catch (error) {
+        console.error('Error fetching teams:', error);
+        setErrorMessage('Error fetching teams. Please try again.');
+      }
+    };
+
+    fetchTeams();
+  }, []);
 
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Convert phone_no to number if it's a phone number field
     if (name === 'phone_no') {
       setEmployee({
         ...employee,
-        [name]: value ? Number(value) : '' // Convert to number
+        [name]: value ? Number(value) : ''
       });
     } else {
       setEmployee({
@@ -42,7 +57,7 @@ function AddEmployee() {
         phone_no: '',
         team: ''
       });
-      console.log(response.data);  // Optionally log the response for debugging
+      console.log(response.data);
     } catch (error) {
       setErrorMessage('Error adding employee. Please try again.');
       setSuccessMessage('');
@@ -81,15 +96,20 @@ function AddEmployee() {
           required
           style={styles.input}
         />
-        <input
-          type="text"
+        <select
           name="team"
           value={employee.team}
           onChange={handleChange}
-          placeholder="Team"
           required
           style={styles.input}
-        />
+        >
+          <option value="">Select Team</option>
+          {teams.map((team) => (
+            <option key={team._id} value={team._id}>
+              {team.title}
+            </option>
+          ))}
+        </select>
         <button type="submit" style={styles.button}>
           Add Employee
         </button>
