@@ -8,30 +8,45 @@ function UpdateAssetModal({ assetId, onClose, onUpdate }) {
     type: '',
     serial_no: '',
   });
+  const [assetTypes, setAssetTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (assetId) {
-      setLoading(true);
-      axios.get(`${import.meta.env.VITE_URL}/asset/get/${assetId}`)
-        .then(response => {
+    const fetchAssetTypes = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_URL}/assetType/get-all`);
+        setAssetTypes(response.data.data);
+      } catch (error) {
+        console.error('Error fetching asset types:', error);
+        setError('Failed to fetch asset types.');
+      }
+    };
+
+    const fetchAsset = async () => {
+      if (assetId) {
+        setLoading(true);
+        try {
+          const response = await axios.get(`${import.meta.env.VITE_URL}/asset/get/${assetId}`);
           setAsset(response.data);
           setLoading(false);
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('Error fetching asset:', error);
           setError('Failed to fetch asset data.');
           setLoading(false);
-        });
-    }
+        }
+      }
+    };
+
+    fetchAssetTypes();
+    fetchAsset();
   }, [assetId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setAsset(prevAsset => ({
       ...prevAsset,
-      [name]: name === 'serial_no' ? Number(value) : value
+      [name]: value  // Keep serial_no as a string
     }));
   };
 
@@ -73,15 +88,21 @@ function UpdateAssetModal({ assetId, onClose, onUpdate }) {
             required
             style={styles.input}
           />
-          <input
-            type="text"
+          {/* Asset type dropdown */}
+          <select
             name="type"
             value={asset.type}
             onChange={handleChange}
-            placeholder="Type"
             required
             style={styles.input}
-          />
+          >
+            <option value="" disabled>Select Type</option>
+            {assetTypes.map((type) => (
+              <option key={type._id} value={type._id}>
+                {type.title}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             name="serial_no"
