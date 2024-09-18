@@ -4,11 +4,13 @@ import UpdateAssetModal from './UpdateAssetModal'; // Import the UpdateAssetModa
 
 function AssetList() {
   const [assets, setAssets] = useState([]);
+  const [assetTypes, setAssetTypes] = useState({});
   const [selectedAssetId, setSelectedAssetId] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchAssets();
+    fetchAssetTypes();
   }, []);
 
   const fetchAssets = async () => {
@@ -17,6 +19,19 @@ function AssetList() {
       setAssets(response.data.data);
     } catch (error) {
       console.error('Error fetching assets:', error);
+    }
+  };
+
+  const fetchAssetTypes = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_URL}/assetType/get-all`);
+      const types = response.data.data.reduce((acc, type) => {
+        acc[type._id] = type.title; // Create a map of _id to title
+        return acc;
+      }, {});
+      setAssetTypes(types);
+    } catch (error) {
+      console.error('Error fetching asset types:', error);
     }
   };
 
@@ -64,7 +79,9 @@ function AssetList() {
                 <td style={styles.td}>{asset._id}</td>
                 <td style={styles.td}>{asset.name}</td>
                 <td style={styles.td}>{asset.description}</td>
-                <td style={styles.td}>{asset.type}</td>
+                <td style={styles.td}>
+                  {assetTypes[asset.type] || 'Unknown Type'}
+                </td>
                 <td style={styles.td}>{asset.serial_no}</td>
                 <td style={styles.td}>{asset.Status ? 'Active' : 'Inactive'}</td>
                 <td style={styles.td}>
