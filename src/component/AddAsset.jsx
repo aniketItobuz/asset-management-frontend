@@ -5,7 +5,7 @@ function AddAsset() {
   const [asset, setAsset] = useState({
     name: '',
     description: '',
-    type: '',
+    type: '', // This will hold the type ID from the dropdown
     serial_no: '',
     created_by: '66e6772cdd6e79520a3f110c' // Replace with dynamic value if needed
   });
@@ -19,7 +19,7 @@ function AddAsset() {
     const fetchAssetTypes = async () => {
       try {
         const response = await axios.get(`${import.meta.env.VITE_URL}/assetType/get-all`);
-        setAssetTypes(response.data.data); // Assuming response has a "data" field
+        setAssetTypes(response.data.data); // Assuming response has a "data" field with asset types
       } catch (error) {
         console.error('Error fetching asset types', error);
       }
@@ -91,7 +91,7 @@ function AddAsset() {
         >
           <option value="">Select Type</option>
           {assetTypes.map((type) => (
-            <option key={type._id} value={type.title}>
+            <option key={type._id} value={type._id}>
               {type.title}
             </option>
           ))}
