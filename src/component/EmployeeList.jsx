@@ -4,11 +4,13 @@ import UpdateEmployeeModal from './UpdateEmployeeModal.jsx';
 
 function EmployeeTable() {
   const [employees, setEmployees] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchEmployees();
+    fetchTeams();
   }, []);
 
   const fetchEmployees = async () => {
@@ -17,6 +19,15 @@ function EmployeeTable() {
       setEmployees(response.data.data);
     } catch (error) {
       console.error('Error fetching employees:', error);
+    }
+  };
+
+  const fetchTeams = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/employeeTeam/get-all');
+      setTeams(response.data.data);
+    } catch (error) {
+      console.error('Error fetching teams:', error);
     }
   };
 
@@ -43,6 +54,11 @@ function EmployeeTable() {
     fetchEmployees();
   };
 
+  const getTeamTitle = (teamId) => {
+    const team = teams.find(t => t._id === teamId);
+    return team ? team.title : 'Unknown';
+  };
+
   return (
     <div style={styles.container}>
       {employees.length > 0 ? (
@@ -65,7 +81,7 @@ function EmployeeTable() {
                 <td style={styles.td}>{employee.name}</td>
                 <td style={styles.td}>{employee.email}</td>
                 <td style={styles.td}>{employee.phone_no}</td>
-                <td style={styles.td}>{employee.team}</td>
+                <td style={styles.td}>{getTeamTitle(employee.team)}</td>
                 <td style={styles.td}>{employee.status ? 'Active' : 'Inactive'}</td>
                 <td style={styles.td}>
                   <button 
