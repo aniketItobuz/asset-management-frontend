@@ -130,7 +130,7 @@ const styles = {
     maxWidth: '800px',
   },
   table: {
-    width: '130%',
+    width: '140%',
     borderCollapse: 'collapse',
     boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
   },
