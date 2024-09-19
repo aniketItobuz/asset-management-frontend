@@ -10,7 +10,7 @@ function EmployeeTable() {
 
   // States for pagination
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(5); // Items per page
+  const [limit, setLimit] = useState(10); // Items per page
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
