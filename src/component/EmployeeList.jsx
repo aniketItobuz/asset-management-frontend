@@ -1,35 +1,48 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import UpdateEmployeeModal from './UpdateEmployeeModal.jsx';
+import axios from 'axios';
+import UpdateEmployeeModal from './UpdateEmployeeModal.jsx'; // Import the UpdateEmployeeModal component
 
-function EmployeeTable() {
+function EmployeeTable({ token }) {
   const [employees, setEmployees] = useState([]);
   const [teams, setTeams] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
+  
   // States for pagination
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10); // Items per page
   const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchEmployees();
-    fetchTeams();
-  }, [page, limit]); // Re-fetch employees when page or limit changes
+    if (token) {
+      fetchEmployees();
+      fetchTeams();
+    }
+  }, [token, page, limit]); // Re-fetch employees when page, limit, or token changes
 
   const fetchEmployees = async () => {
+    if (!token) return;
+    setLoading(true);
+    setError(null);
     try {
       const response = await axios.get(`${import.meta.env.VITE_URL}/employee/get-all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         params: {
-          page: page, // Send page as query param
-          limit: limit, // Send limit as query param
+          page: page,
+          limit: limit,
         },
       });
       setEmployees(response.data.data);
       setTotalPages(response.data.meta.totalPages); // Set total pages from response
     } catch (error) {
+      setError('Error fetching employees. Please try again later.');
       console.error('Error fetching employees:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,15 +51,21 @@ function EmployeeTable() {
       const response = await axios.get('http://localhost:3000/employeeTeam/get-all');
       setTeams(response.data.data);
     } catch (error) {
+      setError('Error fetching teams. Please try again later.');
       console.error('Error fetching teams:', error);
     }
   };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_URL}/employee/delete/${id}`);
+      await axios.delete(`${import.meta.env.VITE_URL}/employee/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       fetchEmployees();
     } catch (error) {
+      setError('Error deleting employee. Please try again later.');
       console.error('Error deleting employee:', error);
     }
   };
@@ -84,24 +103,24 @@ function EmployeeTable() {
 
   return (
     <div style={styles.container}>
-      {employees.length > 0 ? (
+      {loading && <p className="loading-message">Loading...</p>}
+      {error && <p className="error-message">{error}</p>}
+      {!loading && employees.length > 0 ? (
         <>
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>ID</th>
                 <th style={styles.th}>Name</th>
                 <th style={styles.th}>Email</th>
-                <th style={styles.th}>Phone</th>
+                <th style={styles.th}>Phone No</th>
                 <th style={styles.th}>Team</th>
                 <th style={styles.th}>Status</th>
-                <th style={styles.th}>Action</th>
+                <th style={styles.th}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {employees.map((employee) => (
                 <tr key={employee._id}>
-                  <td style={styles.td}>{employee._id}</td>
                   <td style={styles.td}>{employee.name}</td>
                   <td style={styles.td}>{employee.email}</td>
                   <td style={styles.td}>{employee.phone_no}</td>
@@ -150,9 +169,8 @@ function EmployeeTable() {
           </div>
         </>
       ) : (
-        <p style={styles.noDataMessage}>Table has no data</p>
+        !loading && <p style={styles.noDataMessage}>No employees found.</p>
       )}
-
       {showModal && (
         <UpdateEmployeeModal
           employeeId={selectedEmployeeId}
@@ -231,7 +249,7 @@ const styles = {
   pageInfo: {
     fontSize: '16px',
     fontWeight: 'bold',
-  }
+  },
 };
 
 export default EmployeeTable;

@@ -5,102 +5,83 @@ import AssetList from './component/AssetList.jsx';
 import AddAsset from './component/AddAsset.jsx';
 import AssetAssign from './component/AssetAssign.jsx';
 import AssetHistory from './component/AssetHistoryDisplay.jsx';
-import './App.css'; // Import custom CSS for the modern look
+import Login from './component/Login.jsx';
+import './App.css';
 
 function App() {
   const [activeTab, setActiveTab] = useState('employees');
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [showAddAsset, setShowAddAsset] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState('');
+
+  const handleLogin = (token) => {
+    setToken(token);
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setToken('');
+  };
 
   return (
     <div className="app-container">
-      <h1 className="app-title">Asset Management System</h1>
+      {!isLoggedIn ? (
+        <Login onLogin={handleLogin} />
+      ) : (
+        <>
+          <h1 className="app-title">Asset Management System</h1>
 
-      {/* Tabs for Employees, Assets, Asset Assignments, and Asset History */}
-      <div className="tabs">
-        <button
-          className={`tab-button ${activeTab === 'employees' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('employees');
-            setShowAddEmployee(false);
-            setShowAddAsset(false);
-          }}
-        >
-          <i className="fas fa-users"></i> Employee Management
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'assets' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('assets');
-            setShowAddEmployee(false);
-            setShowAddAsset(false);
-          }}
-        >
-          <i className="fas fa-box"></i> Asset Management
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'assign' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('assign');
-            setShowAddEmployee(false);
-            setShowAddAsset(false);
-          }}
-        >
-          <i className="fas fa-tasks"></i> Assign Asset
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveTab('history');
-            setShowAddEmployee(false);
-            setShowAddAsset(false);
-          }}
-        >
-          <i className="fas fa-history"></i> Asset History
-        </button>
-      </div>
+          <button className="logout-button" onClick={handleLogout}>
+            Logout
+          </button>
 
-      {/* Conditional rendering based on the active tab */}
-      <div className="tab-content">
-        {activeTab === 'employees' && (
-          <div className="employee-section">
-            <div className="section-header">
-              <h2>Employee List</h2>
+          <div className="tabs">
+            {['employees', 'assets', 'assign', 'history'].map((tab) => (
               <button
-                className="add-button"
-                onClick={() => setShowAddEmployee(prev => !prev)}
+                key={tab}
+                className={`tab-button ${activeTab === tab ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setShowAddEmployee(false);
+                  setShowAddAsset(false);
+                }}
               >
-                <i className="fas fa-plus"></i> {showAddEmployee ? 'Cancel' : 'Add New Employee'}
+                <i className={`fas fa-${tab === 'employees' ? 'users' : tab === 'assets' ? 'box' : tab === 'assign' ? 'tasks' : 'history'}`}></i>
+                {tab.charAt(0).toUpperCase() + tab.slice(1).replace('_', ' ')} Management
               </button>
-            </div>
-            {showAddEmployee ? <AddEmployee /> : <EmployeeTable />}
+            ))}
           </div>
-        )}
-        {activeTab === 'assets' && (
-          <div className="asset-section">
-            <div className="section-header">
-              <h2>Asset List</h2>
-              <button
-                className="add-button"
-                onClick={() => setShowAddAsset(prev => !prev)}
-              >
-                <i className="fas fa-plus"></i> {showAddAsset ? 'Cancel' : 'Add New Asset'}
-              </button>
-            </div>
-            {showAddAsset ? <AddAsset /> : <AssetList />}
+
+          <div className="tab-content">
+            {activeTab === 'employees' && (
+              <div className="employee-section">
+                <div className="section-header">
+                  <h2>Employee List</h2>
+                  <button className="add-button" onClick={() => setShowAddEmployee((prev) => !prev)}>
+                    <i className="fas fa-plus"></i> {showAddEmployee ? 'Cancel' : 'Add New Employee'}
+                  </button>
+                </div>
+                {showAddEmployee ? <AddEmployee /> : <EmployeeTable token={token} />}
+              </div>
+            )}
+            {activeTab === 'assets' && (
+              <div className="asset-section">
+                <div className="section-header">
+                  <h2>Asset List</h2>
+                  <button className="add-button" onClick={() => setShowAddAsset((prev) => !prev)}>
+                    <i className="fas fa-plus"></i> {showAddAsset ? 'Cancel' : 'Add New Asset'}
+                  </button>
+                </div>
+                {showAddAsset ? <AddAsset /> : <AssetList token={token} />}
+              </div>
+            )}
+            {activeTab === 'assign' && <AssetAssign token={token} />}
+            {activeTab === 'history' && <AssetHistory token={token} />}
           </div>
-        )}
-        {activeTab === 'assign' && (
-          <div className="assign-section">
-            <AssetAssign />
-          </div>
-        )}
-        {activeTab === 'history' && (
-          <div className="history-section">
-            <AssetHistory />
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }

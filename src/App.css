@@ -113,3 +113,34 @@ body {
         font-size: 0.9rem;
     }
 }
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px; /* Add some padding for better spacing */
+  }
+  
+
+  .logout-button {
+    position: absolute;
+    top: 33px; /* Adjust as needed */
+    right: 100px; /* Adjust as needed */
+    padding: 13px 30px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .logout-button:hover {
+    background-color: #c82333;
+  }
+  
+
+
+
+
